@@ -6,14 +6,14 @@ import (
 )
 
 type Todo struct {
-	ID        int
-	Text      string
-	Completed bool
+	ID        int    `json:"id"`
+	Text      string `json:"text"`
+	Completed bool   `json:"completed"`
 }
 
 type TodoList struct {
-	Todos  []Todo
-	NextID int
+	Todos  []Todo `json:"todos"`
+	NextID int    `json:"nextID"`
 }
 
 func NewTodoList() *TodoList {
