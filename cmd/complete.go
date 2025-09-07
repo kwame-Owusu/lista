@@ -17,12 +17,14 @@ var completeCmd = &cobra.Command{
 func completeTodo(cmd *cobra.Command, args []string) {
 	todoId, err := strconv.Atoi(args[0])
 	if err != nil {
-		fmt.Printf("Error converting argument into int")
+		fmt.Printf("Error converting argument into int\n")
 		return
 	}
+	defer saveTodos()
 	err = todoList.Complete(todoId)
 	if err != nil {
-		fmt.Printf("Error completing todo with id: %s", err)
+		fmt.Printf("Error completing todo with id: %s\n", err)
 		return
 	}
+	fmt.Printf("Completed todo with ID: %d\n", todoId)
 }
