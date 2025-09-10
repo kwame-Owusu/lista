@@ -315,3 +315,80 @@ func TestTodoList_GetCompleted(t *testing.T) {
 		}
 	}
 }
+
+func TestTodoList_Edit(t *testing.T) {
+	tests := []struct {
+		name        string
+		initial     []Todo
+		id          int
+		newText     string
+		expectError bool
+		expected    []Todo
+	}{
+		{
+			name: "Edit existing todo",
+			initial: []Todo{
+				{ID: 1, Text: "Old text", Completed: false},
+				{ID: 2, Text: "Another todo", Completed: false},
+			},
+			id:          1,
+			newText:     "Updated text",
+			expectError: false,
+			expected: []Todo{
+				{ID: 1, Text: "Updated text", Completed: false},
+				{ID: 2, Text: "Another todo", Completed: false},
+			},
+		},
+		{
+			name: "Edit non-existent todo",
+			initial: []Todo{
+				{ID: 1, Text: "Old text", Completed: false},
+			},
+			id:          99,
+			newText:     "Should not work",
+			expectError: true,
+			expected: []Todo{
+				{ID: 1, Text: "Old text", Completed: false},
+			},
+		},
+		{
+			name:        "Edit in empty list",
+			initial:     []Todo{},
+			id:          1,
+			newText:     "No todos here",
+			expectError: true,
+			expected:    []Todo{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tl := &TodoList{
+				Todos:  append([]Todo(nil), tt.initial...), // copy to avoid mutation issues
+				NextID: len(tt.initial) + 1,
+			}
+
+			err := tl.Edit(tt.id, tt.newText)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error editing ID %d, got nil", tt.id)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			}
+
+			if len(tl.Todos) != len(tt.expected) {
+				t.Fatalf("Expected %d todos, got %d", len(tt.expected), len(tl.Todos))
+			}
+
+			for i := range tl.Todos {
+				if tl.Todos[i] != tt.expected[i] {
+					t.Errorf("Expected todo %+v, got %+v", tt.expected[i], tl.Todos[i])
+				}
+			}
+		})
+	}
+}
