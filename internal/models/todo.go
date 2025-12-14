@@ -5,10 +5,44 @@ import (
 	"strings"
 )
 
+type Priority int
+
+const (
+	Low Priority = iota
+	Medium
+	High
+)
+
+func (p Priority) String() string {
+	switch p {
+	case Low:
+		return "Low"
+	case Medium:
+		return "Medium"
+	case High:
+		return "High"
+	}
+	return "Invalid Priority"
+}
+
+func ParsePriority(s string) (Priority, error) {
+	lower := strings.ToLower(s)
+	switch lower {
+	case "l", "low":
+		return Low, nil
+	case "m", "medium":
+		return Medium, nil
+	case "h", "high":
+		return High, nil
+	}
+	return 0, fmt.Errorf("Invalid priority: %v, must be low/l, medium/m, or high/h", lower)
+}
+
 type Todo struct {
-	ID        int    `json:"id"`
-	Text      string `json:"text"`
-	Completed bool   `json:"completed"`
+	ID        int      `json:"id"`
+	Text      string   `json:"text"`
+	Completed bool     `json:"completed"`
+	Priority  Priority `json:"priority"`
 }
 
 type TodoList struct {
@@ -31,6 +65,7 @@ func (tl *TodoList) Add(text string) error {
 		ID:        tl.NextID,
 		Text:      text,
 		Completed: false,
+		Priority:  Low,
 	}
 	tl.Todos = append(tl.Todos, todo)
 	tl.NextID++
