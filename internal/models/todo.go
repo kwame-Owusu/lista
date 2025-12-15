@@ -7,7 +7,8 @@ import (
 
 type Todo struct {
 	ID        int      `json:"id"`
-	Text      string   `json:"text"`
+	Title     string   `json:"title"`
+	Notes     string   `json:"notes,omitempty"`
 	Completed bool     `json:"completed"`
 	Priority  Priority `json:"priority"`
 }
@@ -24,13 +25,13 @@ func NewTodoList() *TodoList {
 	}
 }
 
-func (tl *TodoList) Add(text string, priority Priority) error {
-	if strings.TrimSpace(text) == "" {
-		return fmt.Errorf("todo text cannot be empty")
+func (tl *TodoList) Add(title string, priority Priority) error {
+	if strings.TrimSpace(title) == "" {
+		return fmt.Errorf("todo title cannot be empty")
 	}
 	todo := Todo{
 		ID:        tl.NextID,
-		Text:      text,
+		Title:     title,
 		Completed: false,
 		Priority:  priority,
 	}
@@ -76,10 +77,10 @@ func (tl *TodoList) Delete(id int) error {
 	return fmt.Errorf("todo with ID %d not found", id)
 }
 
-func (tl *TodoList) Edit(id int, text string) error {
+func (tl *TodoList) Edit(id int, title string) error {
 	for i := range tl.Todos {
 		if tl.Todos[i].ID == id {
-			tl.Todos[i].Text = text
+			tl.Todos[i].Title = title
 			return nil
 		}
 	}

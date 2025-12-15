@@ -40,6 +40,6 @@ func listTodos(cmd *cobra.Command, args []string) {
 			todo.ID,
 			status,
 			todo.Priority,
-			todo.Text)
+			todo.Title)
 	}
 }

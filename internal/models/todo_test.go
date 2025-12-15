@@ -35,7 +35,7 @@ func TestTodoList_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tl := NewTodoList()
-			err := tl.Add(tt.text)
+			err := tl.Add(tt.text, Low)
 
 			if tt.expectError {
 				if err == nil {
@@ -58,8 +58,8 @@ func TestTodoList_Add(t *testing.T) {
 				t.Errorf("Expected ID 1, got %d", todo.ID)
 			}
 
-			if todo.Text != tt.text {
-				t.Errorf("Expected text '%s', got '%s'", tt.text, todo.Text)
+			if todo.Title != tt.text {
+				t.Errorf("Expected text '%s', got '%s'", tt.text, todo.Title)
 			}
 
 			if todo.Completed {
@@ -72,9 +72,9 @@ func TestTodoList_Add(t *testing.T) {
 func TestTodoList_Add_Multiple(t *testing.T) {
 	tl := NewTodoList()
 
-	tl.Add("First todo")
-	tl.Add("Second todo")
-	tl.Add("Third todo")
+	tl.Add("First todo", Low)
+	tl.Add("Second todo", Medium)
+	tl.Add("Third todo", High)
 
 	if len(tl.Todos) != 3 {
 		t.Errorf("Expected 3 todos, got %d", len(tl.Todos))
@@ -95,7 +95,7 @@ func TestTodoList_Add_Multiple(t *testing.T) {
 
 func TestTodoList_Complete(t *testing.T) {
 	tl := NewTodoList()
-	tl.Add("Test todo")
+	tl.Add("Test todo", Low)
 
 	// Test completing existing todo
 	err := tl.Complete(1)
@@ -116,8 +116,8 @@ func TestTodoList_Complete(t *testing.T) {
 
 func TestTodoList_List(t *testing.T) {
 	tl := NewTodoList()
-	tl.Add("First todo")
-	tl.Add("Second todo")
+	tl.Add("First todo", Low)
+	tl.Add("Second todo", Low)
 
 	todos := tl.List()
 
@@ -125,18 +125,18 @@ func TestTodoList_List(t *testing.T) {
 		t.Errorf("Expected 2 todos, got %d", len(todos))
 	}
 
-	if todos[0].Text != "First todo" {
-		t.Errorf("Expected 'First todo', got '%s'", todos[0].Text)
+	if todos[0].Title != "First todo" {
+		t.Errorf("Expected 'First todo', got '%s'", todos[0].Title)
 	}
 
-	if todos[1].Text != "Second todo" {
-		t.Errorf("Expected 'Second todo', got '%s'", todos[1].Text)
+	if todos[1].Title != "Second todo" {
+		t.Errorf("Expected 'Second todo', got '%s'", todos[1].Title)
 	}
 }
 
 func TestTodoList_GetByID(t *testing.T) {
 	tl := NewTodoList()
-	tl.Add("Test todo")
+	tl.Add("Test todo", Low)
 
 	// Test getting existing todo
 	todo, err := tl.GetByID(1)
@@ -148,8 +148,8 @@ func TestTodoList_GetByID(t *testing.T) {
 		t.Errorf("Expected ID 1, got %d", todo.ID)
 	}
 
-	if todo.Text != "Test todo" {
-		t.Errorf("Expected 'Test todo', got '%s'", todo.Text)
+	if todo.Title != "Test todo" {
+		t.Errorf("Expected 'Test todo', got '%s'", todo.Title)
 	}
 
 	// Test getting non-existent todo
@@ -168,9 +168,9 @@ func TestTodoList_GetByID(t *testing.T) {
 
 func TestTodoList_Delete(t *testing.T) {
 	tl := NewTodoList()
-	tl.Add("First todo")
-	tl.Add("Second todo")
-	tl.Add("Third todo")
+	tl.Add("First todo", Low)
+	tl.Add("Second todo", Low)
+	tl.Add("Third todo", Low)
 
 	// Delete middle item
 	err := tl.Delete(2)
@@ -184,11 +184,11 @@ func TestTodoList_Delete(t *testing.T) {
 
 	// Verify correct items remain
 	todos := tl.List()
-	if todos[0].ID != 1 || todos[0].Text != "First todo" {
+	if todos[0].ID != 1 || todos[0].Title != "First todo" {
 		t.Error("First todo should remain")
 	}
 
-	if todos[1].ID != 3 || todos[1].Text != "Third todo" {
+	if todos[1].ID != 3 || todos[1].Title != "Third todo" {
 		t.Error("Third todo should remain")
 	}
 
@@ -206,12 +206,12 @@ func TestTodoList_Count(t *testing.T) {
 		t.Errorf("Expected count 0, got %d", tl.Count())
 	}
 
-	tl.Add("First todo")
+	tl.Add("First todo", Low)
 	if tl.Count() != 1 {
 		t.Errorf("Expected count 1, got %d", tl.Count())
 	}
 
-	tl.Add("Second todo")
+	tl.Add("Second todo", Low)
 	if tl.Count() != 2 {
 		t.Errorf("Expected count 2, got %d", tl.Count())
 	}
@@ -232,9 +232,9 @@ func TestTodoList_GetPending(t *testing.T) {
 	}
 
 	// Add todos
-	tl.Add("Pending todo 1")
-	tl.Add("Pending todo 2")
-	tl.Add("To be completed")
+	tl.Add("Pending todo 1", Low)
+	tl.Add("Pending todo 2", Low)
+	tl.Add("To be completed", Low)
 
 	// Complete one todo
 	tl.Complete(3)
@@ -261,9 +261,9 @@ func TestTodoList_CountPending(t *testing.T) {
 	}
 
 	// Add todos
-	tl.Add("Todo 1")
-	tl.Add("Todo 2")
-	tl.Add("Todo 3")
+	tl.Add("Todo 1", Low)
+	tl.Add("Todo 2", Low)
+	tl.Add("Todo 3", Low)
 
 	if tl.CountPending() != 3 {
 		t.Errorf("Expected 3 pending todos, got %d", tl.CountPending())
@@ -288,9 +288,9 @@ func TestTodoList_GetCompleted(t *testing.T) {
 	}
 
 	// Add and complete todos
-	tl.Add("Todo 1")
-	tl.Add("Todo 2")
-	tl.Add("Todo 3")
+	tl.Add("Todo 1", Low)
+	tl.Add("Todo 2", Low)
+	tl.Add("Todo 3", Low)
 
 	tl.Complete(1)
 	tl.Complete(3)
@@ -328,27 +328,27 @@ func TestTodoList_Edit(t *testing.T) {
 		{
 			name: "Edit existing todo",
 			initial: []Todo{
-				{ID: 1, Text: "Old text", Completed: false},
-				{ID: 2, Text: "Another todo", Completed: false},
+				{ID: 1, Title: "Old text", Completed: false},
+				{ID: 2, Title: "Another todo", Completed: false},
 			},
 			id:          1,
 			newText:     "Updated text",
 			expectError: false,
 			expected: []Todo{
-				{ID: 1, Text: "Updated text", Completed: false},
-				{ID: 2, Text: "Another todo", Completed: false},
+				{ID: 1, Title: "Updated text", Completed: false},
+				{ID: 2, Title: "Another todo", Completed: false},
 			},
 		},
 		{
 			name: "Edit non-existent todo",
 			initial: []Todo{
-				{ID: 1, Text: "Old text", Completed: false},
+				{ID: 1, Title: "Old text", Completed: false},
 			},
 			id:          99,
 			newText:     "Should not work",
 			expectError: true,
 			expected: []Todo{
-				{ID: 1, Text: "Old text", Completed: false},
+				{ID: 1, Title: "Old text", Completed: false},
 			},
 		},
 		{

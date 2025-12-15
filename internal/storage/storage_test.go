@@ -11,8 +11,8 @@ import (
 
 func createTestTodoList() *models.TodoList {
 	tl := models.NewTodoList()
-	tl.Add("Buy groceries")
-	tl.Add("Walk the dog")
+	tl.Add("Buy groceries", models.Low)
+	tl.Add("Walk the dog", models.Low)
 	tl.Complete(2)
 	return tl
 }
@@ -73,8 +73,8 @@ func TestLoadTodos_Success(t *testing.T) {
 		t.Errorf("Expected 2 todos, got %d", len(todos))
 	}
 
-	if todos[0].Text != "Buy groceries" {
-		t.Errorf("Expected 'Buy groceries', got '%s'", todos[0].Text)
+	if todos[0].Title != "Buy groceries" {
+		t.Errorf("Expected 'Buy groceries', got '%s'", todos[0].Title)
 	}
 
 	if !todos[1].Completed {
@@ -117,8 +117,8 @@ func TestSaveLoad_RoundTrip(t *testing.T) {
 	}
 
 	for i := range originalTodos {
-		if originalTodos[i].Text != loaded[i].Text {
-			t.Errorf("Text mismatch: expected '%s', got '%s'", originalTodos[i].Text, loaded[i].Text)
+		if originalTodos[i].Title != loaded[i].Title {
+			t.Errorf("Text mismatch: expected '%s', got '%s'", originalTodos[i].Title, loaded[i].Title)
 		}
 	}
 }
