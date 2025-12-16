@@ -23,35 +23,46 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			todos := m.todoList.List()
 			if len(todos) > 0 && m.cursor < len(todos) {
 				selectedTodo := todos[m.cursor]
-				err := m.todoList.Toggle(selectedTodo.ID)
+				selectedID := selectedTodo.ID
+
+				err := m.todoList.Toggle(selectedID)
 				if err != nil {
 					m.err = err
 					return m, nil
 				}
+
 				// Save to file
-				err = storage.SaveTodos(m.todoList, m.filename)
-				if err != nil {
+				if err := storage.SaveTodos(m.todoList, m.filename); err != nil {
 					m.err = err
+				}
+
+				// Re-sync cursor after reorder
+				todos = m.todoList.List()
+				if idx := findTodoIndexByID(todos, selectedID); idx >= 0 {
+					m.cursor = idx
 				}
 			}
 
 		case "d", "x": // Delete todo
 			todos := m.todoList.List()
 			if len(todos) > 0 && m.cursor < len(todos) {
-				selectedTodo := todos[m.cursor]
-				err := m.todoList.Delete(selectedTodo.ID)
+				selectedID := todos[m.cursor].ID
+
+				err := m.todoList.Delete(selectedID)
 				if err != nil {
 					m.err = err
 					return m, nil
 				}
-				// Adjust cursor if we deleted the last item
-				if m.cursor >= len(m.todoList.List()) && m.cursor > 0 {
-					m.cursor--
-				}
+
 				// Save to file
-				err = storage.SaveTodos(m.todoList, m.filename)
-				if err != nil {
+				if err := storage.SaveTodos(m.todoList, m.filename); err != nil {
 					m.err = err
+				}
+
+				// Clamp cursor safely
+				todos = m.todoList.List()
+				if m.cursor >= len(todos) && m.cursor > 0 {
+					m.cursor--
 				}
 			}
 

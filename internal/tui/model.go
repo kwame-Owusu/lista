@@ -25,3 +25,12 @@ func NewModel(todoList *models.TodoList, filename string) model {
 func (m model) Init() tea.Cmd {
 	return nil
 }
+
+func findTodoIndexByID(todos []models.Todo, id int) int {
+	for i, t := range todos {
+		if t.ID == id {
+			return i
+		}
+	}
+	return -1
+}

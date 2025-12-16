@@ -37,8 +37,15 @@ func (m model) View() string {
 		// Checkbox
 		checkbox := "○"
 		if todo.Completed {
-			checkbox = checkboxStyle.Render("✓")
+			checkbox = "✓"
 		}
+
+		content := fmt.Sprintf(
+			"%s %s [%s]",
+			checkbox,
+			todo.Title,
+			todo.Priority,
+		)
 
 		// Priority badge
 		priorityBadge := getPriorityStyle(todo.Priority.String()).
@@ -51,11 +58,12 @@ func (m model) View() string {
 		var line string
 		if m.cursor == i {
 			// Selected item - highlight entire line
-			content := fmt.Sprintf("%s %s %s", checkbox, todoTitle, priorityBadge)
 			line = cursor + selectedStyle.Render(content)
+			if todo.Completed {
+				line = cursor + completedSelectedStyle.Render(content)
+			}
 		} else if todo.Completed {
 			// Completed item
-			content := fmt.Sprintf("%s %s %s", checkbox, todoTitle, priorityBadge)
 			line = cursor + completedStyle.Render(content)
 		} else {
 			// Normal item
