@@ -133,3 +133,14 @@ func (tl *TodoList) GetCompleted() []Todo {
 	}
 	return result
 }
+
+// Toggle completion status
+func (tl *TodoList) Toggle(id int) error {
+	for i := range tl.Todos {
+		if tl.Todos[i].ID == id {
+			tl.Todos[i].Completed = !tl.Todos[i].Completed
+			return nil
+		}
+	}
+	return fmt.Errorf("todo with ID %d not found", id)
+}

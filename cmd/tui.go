@@ -12,7 +12,7 @@ var tuiCmd = &cobra.Command{
 	Use:   "tui",
 	Short: "Run lista in interactive TUI mode",
 	Run: func(cmd *cobra.Command, args []string) {
-		m := tui.NewModel(todoList)
+		m := tui.NewModel(todoList, dataFile)
 		p := tea.NewProgram(m)
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Error: %v\n", err)

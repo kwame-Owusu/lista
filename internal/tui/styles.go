@@ -61,6 +61,9 @@ var (
 	cursorStyle = lipgloss.NewStyle().
 			Foreground(secondary).
 			Bold(true)
+	errorStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FF5555")).
+			Bold(true)
 )
 
 // Helper function to get priority style

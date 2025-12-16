@@ -10,12 +10,15 @@ type model struct {
 	cursor   int // which todo is selected
 	width    int // terminal width
 	height   int // terminal height
+	filename string
+	err      error
 }
 
-func NewModel(todoList *models.TodoList) model {
+func NewModel(todoList *models.TodoList, filename string) model {
 	return model{
 		todoList: todoList,
 		cursor:   0,
+		filename: filename,
 	}
 }
 

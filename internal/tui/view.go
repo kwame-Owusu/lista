@@ -12,6 +12,12 @@ func (m model) View() string {
 	title := titleStyle.Render("✨ LISTA - Your CLI task manager")
 	b.WriteString(title + "\n\n")
 
+	if m.err != nil {
+		errorMsg := errorStyle.
+			Render(fmt.Sprintf("⚠ Error: %v", m.err))
+		b.WriteString(errorMsg + "\n\n")
+	}
+
 	todos := m.todoList.List()
 
 	if len(todos) == 0 {
