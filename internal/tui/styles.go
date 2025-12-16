@@ -17,6 +17,10 @@ var (
 			Padding(0, 1).
 			MarginBottom(1)
 
+	modalStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			Padding(1, 3)
+
 	// Selected item (cursor on it)
 	selectedStyle = lipgloss.NewStyle().
 			Bold(true).

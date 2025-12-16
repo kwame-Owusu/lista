@@ -9,6 +9,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "y", "enter":
+			err := m.todoList.Delete(m.deleteID)
+			if err != nil {
+				m.err = err
+			} else {
+				_ = storage.SaveTodos(m.todoList, m.filename)
+			}
+
+			m.confirmDelete = false
+			m.deleteID = 0
+
+			// Clamp cursor
+			if m.cursor >= len(m.todoList.List()) && m.cursor > 0 {
+				m.cursor--
+			}
+
+		case "n", "esc":
+			m.confirmDelete = false
+			m.deleteID = 0
+
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "up", "k":
@@ -43,27 +63,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-		case "d", "x": // Delete todo
+		case "d", "x":
 			todos := m.todoList.List()
 			if len(todos) > 0 && m.cursor < len(todos) {
-				selectedID := todos[m.cursor].ID
-
-				err := m.todoList.Delete(selectedID)
-				if err != nil {
-					m.err = err
-					return m, nil
-				}
-
-				// Save to file
-				if err := storage.SaveTodos(m.todoList, m.filename); err != nil {
-					m.err = err
-				}
-
-				// Clamp cursor safely
-				todos = m.todoList.List()
-				if m.cursor >= len(todos) && m.cursor > 0 {
-					m.cursor--
-				}
+				m.confirmDelete = true
+				m.deleteID = todos[m.cursor].ID
 			}
 
 		}

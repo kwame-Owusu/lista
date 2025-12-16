@@ -6,12 +6,14 @@ import (
 )
 
 type model struct {
-	todoList *models.TodoList
-	cursor   int // which todo is selected
-	width    int // terminal width
-	height   int // terminal height
-	filename string
-	err      error
+	todoList      *models.TodoList
+	cursor        int // which todo is selected
+	width         int // terminal width
+	height        int // terminal height
+	filename      string
+	err           error
+	confirmDelete bool
+	deleteID      int
 }
 
 func NewModel(todoList *models.TodoList, filename string) model {

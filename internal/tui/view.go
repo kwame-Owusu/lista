@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"strings"
 )
 
@@ -77,6 +78,40 @@ func (m model) View() string {
 	// Help text
 	help := helpStyle.Render("\n↑/↓: navigate • space: toggle • a: add • d: delete • e: edit • q: quit")
 	b.WriteString(help)
+
+	if m.confirmDelete {
+		todos := m.todoList.List()
+		var title string
+		for _, t := range todos {
+			if t.ID == m.deleteID {
+				title = t.Title
+				break
+			}
+		}
+
+		modal := lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			modalStyle.Render(
+				fmt.Sprintf(
+					"Delete \"%s\"?\n\n%s",
+					title,
+					cursorStyle.Render("y: confirm • n / esc: cancel"),
+				),
+			),
+		)
+
+		// Overlay modal on top of UI
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			modal,
+		)
+	}
 
 	return b.String()
 }
