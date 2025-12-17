@@ -45,10 +45,6 @@ func (m model) renderError() string {
 	return errorStyle.Render(fmt.Sprintf("⚠ Error: %v", m.err)) + "\n\n"
 }
 
-func (m model) renderAddTodo() string {
-	return m.textarea.View()
-}
-
 func (m model) renderTodos() string {
 	todos := m.todoList.List()
 	if len(todos) == 0 {

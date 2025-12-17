@@ -75,13 +75,13 @@ func (m model) updateAddForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cycleFocusedField(msg.String() == "shift+tab")
 			return m, nil
 
-		case "up":
+		case "left":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(true) // cycle up
 				return m, nil
 			}
 
-		case "down":
+		case "right":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(false) // cycle down
 				return m, nil
