@@ -13,6 +13,10 @@ func (m model) View() string {
 		return m.renderDeleteModal()
 	}
 
+	if m.addingTodo {
+		return m.renderAddForm()
+	}
+
 	var b strings.Builder
 
 	b.WriteString(m.renderTitle())
@@ -39,6 +43,10 @@ func (m model) renderError() string {
 		return ""
 	}
 	return errorStyle.Render(fmt.Sprintf("⚠ Error: %v", m.err)) + "\n\n"
+}
+
+func (m model) renderAddTodo() string {
+	return m.textarea.View()
 }
 
 func (m model) renderTodos() string {
@@ -134,5 +142,78 @@ func (m model) renderDeleteModal() string {
 		lipgloss.Center,
 		lipgloss.Center,
 		modal,
+	)
+}
+
+func (m model) renderAddForm() string {
+	var b strings.Builder
+
+	// Title
+	formTitle := titleStyle.Render("✨ Add New Todo") + "\n\n"
+	b.WriteString(formTitle)
+
+	// Title field
+	titleLabel := "Title:"
+	if m.focusedField == fieldTitle {
+		titleLabel = cursorStyle.Render("→ Title:")
+	} else {
+		titleLabel = itemStyle.Render("  Title:")
+	}
+	b.WriteString(titleLabel + "\n")
+	b.WriteString(m.titleInput.View() + "\n\n")
+
+	// Priority field
+	priorities := []string{"Low", "Medium", "High"}
+	priorityLabel := "Priority:"
+	if m.focusedField == fieldPriority {
+		priorityLabel = cursorStyle.Render("→ Priority:")
+	} else {
+		priorityLabel = itemStyle.Render("  Priority:")
+	}
+	b.WriteString(priorityLabel + "\n")
+
+	// Render priority options
+	for i, p := range priorities {
+		var style lipgloss.Style
+		if i == m.priorityIndex {
+			if m.focusedField == fieldPriority {
+				style = selectedStyle
+			} else {
+				style = itemStyle.Foreground(brightYellow)
+			}
+		} else {
+			style = itemStyle.Foreground(fgMuted)
+		}
+		b.WriteString("  " + style.Render(p))
+		if i < len(priorities)-1 {
+			b.WriteString("  ")
+		}
+	}
+	b.WriteString("\n\n")
+
+	// Notes field
+	notesLabel := "Notes (optional):"
+	if m.focusedField == fieldNotes {
+		notesLabel = cursorStyle.Render("→ Notes (optional):")
+	} else {
+		notesLabel = itemStyle.Render("  Notes (optional):")
+	}
+	b.WriteString(notesLabel + "\n")
+	b.WriteString(m.notesInput.View() + "\n\n")
+
+	// Help text
+	helpText := "tab: next field • ↑/↓: change priority • enter/ctrl+s: save • esc: cancel"
+	b.WriteString(helpStyle.Render(helpText))
+
+	// Center the form
+	content := b.String()
+	formBox := modalStyle.Render(content)
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		formBox,
 	)
 }
