@@ -48,9 +48,12 @@ Build the binary and run it:
 
 ```bash
   go build -o lista
-  ./
+  ./lista
 ```
 
 # Tmux + Nvim + Lista demo
-
-add link to the bash script which we use in TMUX
+For this to work, you need to have tmux installed and have a few different bindings, but all boil down to preference.
+My bind-key is Ctrl+a: 
+```bash
+bind-key l display-popup -w 80% -h 80% -E "lista"
+```
