@@ -1,34 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DARWIN_AMD64="./dist/lista-darwin-amd64"
-DARWIN_ARM64="./dist/lista-darwin-arm64"
-LINUX_AMD64="./dist/lista-linux-amd64"
-LINUX_ARM64="./dist/lista-linux-arm64"
+BUILD_DIR="./dist"
+SHASUM_TXT="$BUILD_DIR/shasum.txt"
 
-buildsArray=(
-  "$DARWIN_AMD64"
-  "$DARWIN_ARM64"
-  "$LINUX_AMD64"
-  "$LINUX_ARM64"
+mkdir -p "$BUILD_DIR"
+
+builds=(
+  "darwin amd64 lista-darwin-amd64"
+  "darwin arm64 lista-darwin-arm64"
+  "linux  amd64 lista-linux-amd64"
+  "linux  arm64 lista-linux-arm64"
 )
 
-BUILD_DIR="./dist"
+echo "Building binaries..."
 
-if [ ! -d "$BUILD_DIR" ]; then
-  mkdir "$BUILD_DIR"
-fi
+for build in "${builds[@]}"; do
+  read -r GOOS GOARCH OUTPUT <<< "$build"
 
-for build in "${buildsArray[@]}"; do
-    if test -f "$build" 
-    then
-        echo "$build exists."
-    else
-        # GOOS=darwin GOARCH=amd64 go build -o "./$BUILD_DIR/$DARWIN_AMD64"
-        # GOOS=darwin GOARCH=arm64 go build -o "./$BUILD_DIR/$DARWIN_ARM64"
-        # GOOS=linux GOARCH=amd64 go build -o "./$BUILD_DIR/$LINUX_AMD64"
-        # GOOS=linux GOARCH=arm64 go build -o "./$BUILD_DIR/$LINUX_ARM64"
-        echo "$build does not exist"
-    fi
+  echo "→ $OUTPUT"
+  GOOS=$GOOS GOARCH=$GOARCH \
+    go build -o "$BUILD_DIR/$OUTPUT"
 done
 
+#File is created if missing, File is emptied if it exists
+: > "$SHASUM_TXT"
+
+echo "Generating checksums..."
+
+for build_file in "$BUILD_DIR"/lista-*; do
+  shasum -a 256 -b "$build_file" >> "$SHASUM_TXT"
+done
+
+echo "Done."
