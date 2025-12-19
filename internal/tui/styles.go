@@ -71,7 +71,6 @@ func InitStyles(theme config.Theme) {
 		MarginBottom(1)
 
 	modalStyle = lipgloss.NewStyle().
-		Background(bgAlt).
 		Foreground(fgMain).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(border).
