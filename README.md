@@ -35,6 +35,16 @@ brew install lista
 lista --version
 ```
 
+
+# Configuration
+There is a little that can be configured about lista, and that is the UI theme, when installed it comes with a default theme which is using
+gruvbox colors(because I like gruvbox and you should too 🫡), but if you do not like it, its possible to change that inside the config file at:
+ ```
+ ./config/lista/lista.config.json
+ ```
+The config is nothing complicated, just replace the colors in the theme object to create a new theme using hex color codes.
+
+
 # 🛠️ Development
 
 To build the project locally, you must:
@@ -53,7 +63,12 @@ Build the binary and run it:
 
 # Tmux + Nvim + Lista demo
 For this to work, you need to have tmux installed and have a few different bindings, but all boil down to preference.
-My bind-key is Ctrl+a: 
+My bind-key is Ctrl+a, so in this case to invoke lista in our tmux session we use hit CTRL+a followed by l: 
 ```bash
 bind-key l display-popup -w 80% -h 80% -E "lista"
 ```
+
+
+https://github.com/user-attachments/assets/ba3af0fe-f913-4ca6-886e-eb86ec1b0329
+
+
