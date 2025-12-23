@@ -30,7 +30,7 @@ It’s nothing fancy, just a small tool that helps me stay organized. If it’s 
 You can install Lista using Homebrew. For now, it’s available via my personal tap:
 
 ```bash
-brew tap kwame-owusu/tap https://github.com/kwame-owusu/homebrew-taps
+brew tap kwame-owusu/tap https://github.com/kwame-Owusu/homebrew-taps
 brew install lista
 lista --version
 ```
