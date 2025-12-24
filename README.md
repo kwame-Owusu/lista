@@ -32,7 +32,7 @@ You can install Lista using Homebrew. For now, it’s available via my personal 
 ```bash
 brew tap kwame-owusu/taps https://github.com/kwame-Owusu/homebrew-taps
 brew install lista
-lista --version
+lista --help
 ```
 
 
