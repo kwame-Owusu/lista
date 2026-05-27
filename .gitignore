@@ -1,4 +1,5 @@
 # Ignore build folder
-bin
-dist
+bin/
+dist/
+internal/storage/test.json
 
