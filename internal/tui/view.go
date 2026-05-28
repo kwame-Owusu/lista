@@ -206,7 +206,7 @@ func (m model) renderAddForm() string {
 	b.WriteString(m.notesInput.View() + "\n\n")
 
 	// Help text
-	helpText := "tab: next field • ↑/↓: change priority • enter/ctrl+s: save • esc: cancel"
+	helpText := "tab: next field • ←/→: change priority • enter/ctrl+s: save • esc: cancel"
 	b.WriteString(helpStyle.Render(helpText))
 
 	// Center the form
@@ -279,7 +279,7 @@ func (m model) renderEditForm() string {
 	b.WriteString(m.notesInput.View() + "\n\n")
 
 	// Help text
-	helpText := "tab: next field • ↑/↓: change priority • enter/ctrl+s: save • esc: cancel"
+	helpText := "tab: next field • ←/→: change priority • enter/ctrl+s: save • esc: cancel"
 	b.WriteString(helpStyle.Render(helpText))
 
 	// Center the form
