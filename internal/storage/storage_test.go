@@ -24,7 +24,7 @@ func TestSaveTodos_Success(t *testing.T) {
 	tl := createTestTodoList()
 	filename := filepath.Join(tempDir, "test.json")
 
-	err := SaveTodos(tl, filename)
+	err := SaveTodos(tl.Todos, filename)
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
@@ -44,12 +44,12 @@ func TestSaveTodos_Success(t *testing.T) {
 func TestSaveTodos_InvalidFilename(t *testing.T) {
 	tl := createTestTodoList()
 
-	err := SaveTodos(tl, "test.txt")
+	err := SaveTodos(tl.Todos, "test.txt")
 	if err == nil {
 		t.Error("Expected error for invalid filename")
 	}
 
-	if !strings.Contains(err.Error(), "Invalid filename") {
+	if !strings.Contains(err.Error(), "invalid filename") {
 		t.Errorf("Wrong error message: %v", err)
 	}
 }
@@ -61,7 +61,7 @@ func TestLoadTodos_Success(t *testing.T) {
 	// Save first
 	tl := createTestTodoList()
 	filename := filepath.Join(tempDir, "test.json")
-	SaveTodos(tl, filename)
+	SaveTodos(tl.Todos, filename)
 
 	// Then load
 	todos, err := LoadTodos(filename)
@@ -104,7 +104,7 @@ func TestSaveLoad_RoundTrip(t *testing.T) {
 	filename := filepath.Join(tempDir, "roundtrip.json")
 
 	// Save and load
-	SaveTodos(original, filename)
+	SaveTodos(original.Todos, filename)
 	loaded, err := LoadTodos(filename)
 	if err != nil {
 		t.Fatalf("Round trip failed: %v", err)

@@ -88,6 +88,7 @@ func init() {
 	rootCmd.AddCommand(editCmd)
 	rootCmd.AddCommand(viewCmd)
 	rootCmd.AddCommand(addNotesCmd)
+	rootCmd.AddCommand(exportCmd)
 	loadTodos()
 
 	// Load config
