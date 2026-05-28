@@ -65,8 +65,11 @@ Navigate with `↑/↓`, toggle with `space`, add with `a`, delete with `d`, edi
 ### CLI mode
 
 ```bash
-# Add a todo
-lista add "Buy groceries" --priority high
+# Add a todo with priority and notes
+lista add "Buy groceries" --priority high --notes "get organic, check expiry"
+
+# Add a simple todo
+lista add "Walk the dog"
 
 # List todos
 lista list
