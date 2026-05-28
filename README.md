@@ -102,7 +102,8 @@ bind-key l display-popup -w 80% -h 80% -E "lista"
 
 With `CTRL+a` as your prefix, hitting `CTRL+a` then `l` opens Lista in a centered floating pane.
 
-https://github.com/user-attachments/assets/ba3af0fe-f913-4ca6-886e-eb86ec1b0329
+
+https://github.com/user-attachments/assets/705a15b5-110a-4e48-8944-27e65270bf2f
 
 ## Configuration
 
