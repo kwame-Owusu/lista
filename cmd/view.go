@@ -56,6 +56,11 @@ func renderViewText(todo *models.Todo) {
 	)
 
 	fmt.Println(
+		tui.RenderLabel("Created:"),
+		tui.RenderTimestamp(todo.TimeAgo()),
+	)
+
+	fmt.Println(
 		tui.RenderLabel("Status:"),
 		tui.RenderStatus(todo.Completed),
 	)

@@ -55,6 +55,10 @@ func RenderStatus(completed bool) string {
 	return pendingText.PaddingLeft(3).PaddingRight(2).Render("PENDING")
 }
 
+func RenderTimestamp(s string) string {
+	return mutedText.PaddingLeft(2).Render(s)
+}
+
 func RenderPriority(priority string) string {
 	switch priority {
 	case "High":

@@ -27,13 +27,14 @@ func listTodos(cmd *cobra.Command, args []string) {
 	})
 
 	// Header
-	fmt.Printf("%-4s %-10s %-10s %-90s\n",
+	fmt.Printf("%-4s %-10s %-10s %-14s %s\n",
 		tui.RenderHeader("ID"),
 		tui.RenderHeader("STATUS"),
 		tui.RenderHeader("PRIORITY"),
+		tui.RenderHeader("TIME"),
 		tui.RenderHeader("TITLE"),
 	)
-	fmt.Println(tui.RenderMuted(strings.Repeat("-", 70)))
+	fmt.Println(tui.RenderMuted(strings.Repeat("-", 80)))
 
 	for _, todo := range todos {
 		title := todo.Title
@@ -45,6 +46,7 @@ func listTodos(cmd *cobra.Command, args []string) {
 			fmt.Sprint(todo.ID),
 			tui.RenderStatus(todo.Completed),
 			tui.RenderPriority(todo.Priority.String()),
+			tui.RenderTimestamp(todo.TimeAgo()),
 			tui.RenderTodoTitle(title, todo.Completed),
 		)
 	}

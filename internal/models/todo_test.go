@@ -2,6 +2,7 @@ package models
 
 import (
 	"testing"
+	"time"
 )
 
 func TestNewTodoList(t *testing.T) {
@@ -313,6 +314,38 @@ func TestTodoList_GetCompleted(t *testing.T) {
 		if !expectedIDs[todo.ID] {
 			t.Errorf("Unexpected completed todo ID: %d", todo.ID)
 		}
+	}
+}
+
+func TestTodo_TimeAgo(t *testing.T) {
+	now := time.Now()
+
+	tests := []struct {
+		name      string
+		createdAt time.Time
+		want      string
+	}{
+		{"seconds", now.Add(-5 * time.Second), "added 5s ago"},
+		{"minutes", now.Add(-10 * time.Minute), "added 10mins ago"},
+		{"hours", now.Add(-3 * time.Hour), "added 3h ago"},
+		{"days", now.Add(-5 * 24 * time.Hour), "added 5d ago"},
+		{"zero time", time.Time{}, ""},
+		{"boundary 59s", now.Add(-59 * time.Second), "added 59s ago"},
+		{"boundary 61s", now.Add(-61 * time.Second), "added 1mins ago"},
+		{"boundary 59min", now.Add(-59 * time.Minute), "added 59mins ago"},
+		{"boundary 61min", now.Add(-61 * time.Minute), "added 1h ago"},
+		{"boundary 23h", now.Add(-23 * time.Hour), "added 23h ago"},
+		{"boundary 25h", now.Add(-25 * time.Hour), "added 1d ago"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			todo := Todo{CreatedAt: tt.createdAt}
+			got := todo.TimeAgo()
+			if got != tt.want {
+				t.Errorf("TimeAgo() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 

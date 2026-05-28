@@ -90,7 +90,11 @@ func (m model) renderTodoLine(i int, todo models.Todo) string {
 		if todo.Completed {
 			return cursor + completedSelectedStyle.Render(content)
 		}
-		return cursor + selectedStyle.Render(content)
+		timeAgo := todo.TimeAgo()
+		if timeAgo != "" {
+			timeAgo = " " + timeAgoStyle.Render(timeAgo)
+		}
+		return cursor + selectedStyle.Render(content) + timeAgo
 	} else if todo.Completed {
 		return cursor + completedStyle.Render(content)
 	}

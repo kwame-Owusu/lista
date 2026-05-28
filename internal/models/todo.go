@@ -4,14 +4,33 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Todo struct {
-	ID        int      `json:"id"`
-	Title     string   `json:"title"`
-	Notes     string   `json:"notes,omitempty"`
-	Completed bool     `json:"completed"`
-	Priority  Priority `json:"priority"`
+	ID        int       `json:"id"`
+	Title     string    `json:"title"`
+	Notes     string    `json:"notes,omitempty"`
+	Completed bool      `json:"completed"`
+	Priority  Priority  `json:"priority"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (t Todo) TimeAgo() string {
+	if t.CreatedAt.IsZero() {
+		return ""
+	}
+	d := time.Since(t.CreatedAt)
+	switch {
+	case d < time.Minute:
+		return fmt.Sprintf("added %ds ago", int(d.Seconds()))
+	case d < time.Hour:
+		return fmt.Sprintf("added %dmins ago", int(d.Minutes()))
+	case d < 24*time.Hour:
+		return fmt.Sprintf("added %dh ago", int(d.Hours()))
+	default:
+		return fmt.Sprintf("added %dd ago", int(d.Hours()/24))
+	}
 }
 
 type TodoList struct {
@@ -36,6 +55,7 @@ func (tl *TodoList) Add(title string, priority Priority, notes string) error {
 		Notes:     notes,
 		Completed: false,
 		Priority:  priority,
+		CreatedAt: time.Now(),
 	}
 	tl.Todos = append(tl.Todos, todo)
 	tl.NextID++
