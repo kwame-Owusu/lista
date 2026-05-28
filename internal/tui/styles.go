@@ -40,6 +40,7 @@ var (
 	helpStyle              lipgloss.Style
 	cursorStyle            lipgloss.Style
 	errorStyle             lipgloss.Style
+	timeAgoStyle           lipgloss.Style
 )
 
 func InitStyles(theme config.Theme) {
@@ -119,6 +120,10 @@ func InitStyles(theme config.Theme) {
 	errorStyle = lipgloss.NewStyle().
 		Foreground(errorCol).
 		Bold(true)
+
+	timeAgoStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Italic(true)
 
 	//  CLI styles
 	headerStyle = lipgloss.NewStyle().
