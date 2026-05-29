@@ -17,7 +17,7 @@ No sync, no cloud, no calendar. Just a JSON file, a terminal, and your todos.
 
 ## Why Lista?
 
-I built this for myself. When I'm deep in a Neovim + tmux + bash session, I don't want to reach for a GUI app or a browser tab to jot down a thought. I wanted something that:
+I built this for myself. When I'm deep in a Neovim + Tmux, I don't want to reach for a GUI app or a browser tab to jot down a thought. I wanted something that:
 
 - Fits in a tmux popup without breaking focus
 - Works as fast as I can type
