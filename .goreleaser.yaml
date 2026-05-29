@@ -1,0 +1,41 @@
+version: 2
+project_name: lista
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/kwame-Owusu/lista/cmd.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+
+brews:
+  - repository:
+      owner: kwame-Owusu
+      name: homebrew-taps
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/kwame-Owusu/lista"
+    description: "A simple and aesthetic CLI app to manage your todos on the terminal."
+    license: "MIT"
+    install: |
+      bin.install "lista"
+    test: |
+      system "#{bin}/lista", "--version"
+
+release:
+  prerelease: auto

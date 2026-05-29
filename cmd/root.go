@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 )
 
+var version string
 var todoList *models.TodoList
 var dataFile string //$HOME/.config/lista, where our json configs live
 
@@ -81,6 +82,8 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.Version = version
+
 	rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(completeCmd)
