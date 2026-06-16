@@ -66,10 +66,10 @@ Navigate with `↑/↓`, toggle with `space`, add with `a`, delete with `d`, edi
 
 ```bash
 # Add a todo with priority and notes
-lista add "Buy groceries" --priority high --notes "get organic, check expiry"
+lista add "Add new middleware" --priority high --notes "simple middleware to track visits"
 
 # Add a simple todo
-lista add "Walk the dog"
+lista add "Update docs"
 
 # List todos
 lista list
