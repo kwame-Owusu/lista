@@ -199,7 +199,7 @@ func (m model) renderHelpOverlay() string {
 	keys := []string{
 		"↑ / k", "↓ / j", "space", "a", "e", "d / x", "c",
 		"y / enter", "n / esc",
-		"tab / shift+tab", "← / →", "enter / ctrl+s", "u", "?", "q / ctrl+c",
+		"tab / shift+tab", "← / → / h / l", "enter / ctrl+s", "u", "?", "q / ctrl+c",
 	}
 	actions := []string{
 		"move up", "move down", "toggle complete", "add todo", "edit todo", "delete todo", "purge completed",
@@ -290,7 +290,7 @@ func (m model) renderAddForm() string {
 	b.WriteString(m.notesInput.View() + "\n\n")
 
 	// Help text
-	helpText := "tab: next field • ←/→: change priority • enter/ctrl+s: save • esc: cancel"
+	helpText := "tab: next field • ←/→/h/l: change priority • enter/ctrl+s: save • esc: cancel"
 	b.WriteString(helpStyle.Render(helpText))
 
 	// Center the form
@@ -337,7 +337,7 @@ func (m model) renderEditForm() string {
 	b.WriteString(m.notesInput.View() + "\n\n")
 
 	// Help text
-	helpText := "tab: next field • ←/→: change priority • enter/ctrl+s: save • esc: cancel"
+	helpText := "tab: next field • ←/→/h/l: change priority • enter/ctrl+s: save • esc: cancel"
 	b.WriteString(helpStyle.Render(helpText))
 
 	// Center the form
