@@ -231,6 +231,67 @@ func TestCyclePriority(t *testing.T) {
 	}
 }
 
+func TestPriorityKeysInForms(t *testing.T) {
+	tl := models.NewTodoList()
+	if err := tl.Add("Task", models.Low, ""); err != nil {
+		t.Fatal(err)
+	}
+	m := NewModel(tl, filepath.Join(t.TempDir(), "todos.json"))
+
+	// h/l cycle priority in the add form when the priority field is focused.
+	upd, _ := m.Update(keyMsg("a"))
+	am, _ := upd.(model)
+	if !am.addingTodo {
+		t.Fatal("Expected addingTodo to be true after pressing a")
+	}
+	upd, _ = am.Update(keyMsg("tab"))
+	am, _ = upd.(model)
+	if am.focusedField != fieldPriority {
+		t.Fatalf("Expected focus on priority after tab, got %v", am.focusedField)
+	}
+
+	upd, _ = am.Update(keyMsg("l"))
+	am, _ = upd.(model)
+	if am.priority != models.Medium {
+		t.Errorf("Expected Medium after l, got %v", am.priority)
+	}
+	upd, _ = am.Update(keyMsg("h"))
+	am, _ = upd.(model)
+	if am.priority != models.Low {
+		t.Errorf("Expected Low after h, got %v", am.priority)
+	}
+
+	// h/l cycle priority in the edit form too.
+	upd, _ = m.Update(keyMsg("e"))
+	em, _ := upd.(model)
+	if !em.editingTodo {
+		t.Fatal("Expected editingTodo to be true after pressing e")
+	}
+	upd, _ = em.Update(keyMsg("tab"))
+	em, _ = upd.(model)
+	upd, _ = em.Update(keyMsg("l"))
+	em, _ = upd.(model)
+	if em.priority != models.Medium {
+		t.Errorf("Expected Medium after l in edit form, got %v", em.priority)
+	}
+	upd, _ = em.Update(keyMsg("h"))
+	em, _ = upd.(model)
+	if em.priority != models.Low {
+		t.Errorf("Expected Low after h in edit form, got %v", em.priority)
+	}
+
+	// h/l are inserted as text while a text field is focused.
+	upd, _ = m.Update(keyMsg("a"))
+	am, _ = upd.(model)
+	upd, _ = am.Update(keyMsg("h"))
+	am, _ = upd.(model)
+	upd, _ = am.Update(keyMsg("l"))
+	am, _ = upd.(model)
+	if got := am.titleInput.Value(); got != "hl" {
+		t.Errorf("Expected title input 'hl', got %q", got)
+	}
+}
+
 func TestTickRefresh(t *testing.T) {
 	tl := models.NewTodoList()
 	err := tl.Add("Test todo", models.Low, "")

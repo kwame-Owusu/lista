@@ -112,13 +112,13 @@ func (m model) updateAddForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cycleFocusedField(msg.String() == "shift+tab")
 			return m, nil
 
-		case "left":
+		case "left", "h":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(true) // cycle up
 				return m, nil
 			}
 
-		case "right":
+		case "right", "l":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(false) // cycle down
 				return m, nil
@@ -165,13 +165,13 @@ func (m model) updateEditForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cycleFocusedField(msg.String() == "shift+tab")
 			return m, nil
 
-		case "left":
+		case "left", "h":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(true) // cycle up
 				return m, nil
 			}
 
-		case "right":
+		case "right", "l":
 			if m.focusedField == fieldPriority {
 				m.cyclePriority(false) // cycle down
 				return m, nil
