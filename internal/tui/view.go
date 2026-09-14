@@ -152,18 +152,15 @@ func (m model) renderTodoLine(i int, todo models.Todo) string {
 		titleStyle = lipgloss.NewStyle().Foreground(fgMuted).Strikethrough(true)
 	}
 	b.WriteString(titleStyle.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
-	b.WriteString(GetPriorityStyle(todo.Priority.String()).Render(lipgloss.NewStyle().Width(prioCol).Render(badge)))
+	b.WriteString(GetPriorityStyle(todo.Priority.String()).Strikethrough(todo.Completed).Render(lipgloss.NewStyle().Width(prioCol).Render(badge)))
 	b.WriteString(noteMarkerStyle.Render(lipgloss.NewStyle().Width(2).Render(note)))
-	if timeAgo != "" {
-		b.WriteString(timeAgoStyle.Render(lipgloss.NewStyle().Width(timeCol).Render(timeAgo)))
-	} else {
-		b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
-	}
+	b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
 	return b.String()
 }
 
-// renderSelectedRow draws a todo row with a full-width highlight spanning the
-// content column, in the pending or completed variant.
+// renderSelectedRow draws a todo row with a highlight spanning the title/badge
+// content region, in the pending or completed variant. The timestamp and any
+// trailing space are left on the plain background.
 func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, checkbox, title, note, badge, timeAgo string, titleCol, prioCol, timeCol, total int, todo models.Todo) string {
 	var row lipgloss.Style
 	var titleRow lipgloss.Style
@@ -183,24 +180,24 @@ func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, ch
 	if !todo.Completed {
 		cbStyle = lipgloss.NewStyle().Foreground(fgMain).Bold(true)
 	}
-	badgeStyle := GetPriorityStyle(todo.Priority.String()).Bold(true)
-	timeStyle := timeAgoStyle.Foreground(row.GetForeground())
+	badgeStyle := GetPriorityStyle(todo.Priority.String()).Bold(true).Strikethrough(todo.Completed)
+	timeStyle := timeAgoStyle
 
 	var b strings.Builder
 	b.WriteString(row.Render(cursorStyle.Render(cursor)))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(cbStyle.Render(checkbox))))
 	b.WriteString(titleRow.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(prioCol).Render(badgeStyle.Render(badge))))
-	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(note)))
+	b.WriteString(lipgloss.NewStyle().Width(2).Render(note))
 	if timeAgo != "" {
-		b.WriteString(row.Render(lipgloss.NewStyle().Width(timeCol).Render(timeStyle.Render(timeAgo))))
+		b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(timeStyle.Render(timeAgo)))
 	} else {
-		b.WriteString(row.Render(lipgloss.NewStyle().Width(timeCol).Render("")))
+		b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
 	}
 
 	used := lipgloss.Width(b.String())
 	if used < total {
-		b.WriteString(row.Render(strings.Repeat(" ", total-used)))
+		b.WriteString(strings.Repeat(" ", total-used))
 	}
 	return b.String()
 }
