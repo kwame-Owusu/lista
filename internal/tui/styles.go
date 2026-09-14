@@ -172,7 +172,7 @@ func InitStyles(theme config.Theme) {
 
 	modalHeaderStyle = lipgloss.NewStyle().
 		Foreground(bgMain).
-		Background(accentSecondary).
+		Background(accentPrimary).
 		Bold(true)
 
 	fieldFocusStyle = lipgloss.NewStyle().

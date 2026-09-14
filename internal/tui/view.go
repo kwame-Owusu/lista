@@ -177,13 +177,15 @@ func (m model) renderTodoLine(i int, todo models.Todo) string {
 // content column, in the pending or completed variant.
 func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, checkbox, title, note, badge, timeAgo string, titleCol, prioCol, timeCol, total int, todo models.Todo) string {
 	var row lipgloss.Style
+	var titleRow lipgloss.Style
 	if todo.Completed {
 		row = lipgloss.NewStyle().
 			Foreground(fgMuted).
-			Background(bgMain).
-			Strikethrough(true)
+			Background(bgMain)
+		titleRow = row.Strikethrough(true)
 	} else {
 		row = selectedRowStyle
+		titleRow = row
 	}
 
 	// Dark text reads better on the bright highlight, so keep the status glyphs
@@ -198,7 +200,7 @@ func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, ch
 	var b strings.Builder
 	b.WriteString(row.Render(cursor))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(cbStyle.Render(checkbox))))
-	b.WriteString(row.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
+	b.WriteString(titleRow.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(prioCol).Render(badgeStyle.Render(badge))))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(note)))
 	if timeAgo != "" {
@@ -246,7 +248,7 @@ func (m model) renderSummary(todos []models.Todo) string {
 	count := fmt.Sprintf("%d of %d complete", completed, len(todos))
 
 	line := lipgloss.JoinHorizontal(lipgloss.Top, bar, count)
-	return summaryStyle.Render(line) + "\n\n"
+	return "\n" + summaryStyle.Render(line) + "\n\n"
 }
 
 func (m model) renderHelp() string {
@@ -279,17 +281,16 @@ func (m model) renderPurgeModal() string {
 }
 
 func (m model) renderModal(headerTitle, body string) string {
-	content := modalStyle.Render(body)
-	width := lipgloss.Width(content)
-
+	width := lipgloss.Width(body)
 	header := m.renderModalHeader(headerTitle, width)
 
+	full := header + "\n" + body
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		modalStyle.Render(header+"\n"+content),
+		modalStyle.Render(full),
 	)
 }
 
