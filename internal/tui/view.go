@@ -258,7 +258,7 @@ func (m model) renderDeleteModal() string {
 		title,
 		cursorStyle.Render("y: confirm • n / esc: cancel"),
 	)
-	return m.renderModal("Delete todo", body)
+	return m.renderModal("", body)
 }
 
 func (m model) renderPurgeModal() string {
@@ -266,10 +266,20 @@ func (m model) renderPurgeModal() string {
 		"Purge all completed todos?\n\n%s",
 		cursorStyle.Render("y: confirm • n / esc: cancel"),
 	)
-	return m.renderModal("Purge completed", body)
+	return m.renderModal("", body)
 }
 
 func (m model) renderModal(headerTitle, body string) string {
+	if headerTitle == "" {
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			modalStyle.Render(body),
+		)
+	}
+
 	width := lipgloss.Width(body)
 	header := m.renderModalHeader(headerTitle, width)
 
