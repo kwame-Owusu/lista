@@ -195,9 +195,8 @@ func InitStyles(theme config.Theme) {
 		Bold(true)
 
 	selectedRowStyle = lipgloss.NewStyle().
-		Foreground(bgMain).
-		Background(accentSecondary).
-		Bold(true)
+		Foreground(fgMain).
+		Background(bgAlt)
 
 	//  CLI styles
 	headerStyle = lipgloss.NewStyle().

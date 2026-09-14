@@ -181,24 +181,24 @@ func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, ch
 	if todo.Completed {
 		row = lipgloss.NewStyle().
 			Foreground(fgMuted).
-			Background(bgMain)
+			Background(bgAlt)
 		titleRow = row.Strikethrough(true)
 	} else {
 		row = selectedRowStyle
-		titleRow = row
+		titleRow = row.Bold(true)
 	}
 
-	// Dark text reads better on the bright highlight, so keep the status glyphs
-	// in their semantic colors but switch neutral text to the dark ink.
+	// Keep status glyphs in their semantic colors so they stay readable on the
+	// subtle dark band while neutral text follows the row ink.
 	cbStyle := checkboxStyle
 	if !todo.Completed {
-		cbStyle = lipgloss.NewStyle().Foreground(bgMain).Bold(true)
+		cbStyle = lipgloss.NewStyle().Foreground(fgMain).Bold(true)
 	}
 	badgeStyle := GetPriorityStyle(todo.Priority.String()).Bold(true)
 	timeStyle := timeAgoStyle.Foreground(row.GetForeground())
 
 	var b strings.Builder
-	b.WriteString(row.Render(cursor))
+	b.WriteString(row.Render(cursorStyle.Render(cursor)))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(cbStyle.Render(checkbox))))
 	b.WriteString(titleRow.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
 	b.WriteString(row.Render(lipgloss.NewStyle().Width(prioCol).Render(badgeStyle.Render(badge))))
