@@ -253,7 +253,7 @@ func (m model) renderSummary(todos []models.Todo) string {
 
 func (m model) renderHelp() string {
 	return helpStyle.Render(
-		"↑/k ↓/j navigate · space toggle · a add · e edit · d/x delete · c purge · u undo · ? help · q quit",
+		"↑/k ↓/j navigate   ·   ? help   ·   q quit",
 	) + "\n"
 }
 
