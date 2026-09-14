@@ -147,7 +147,7 @@ func InitStyles(theme config.Theme) {
 
 	// TUI layout styles
 	contentStyle = lipgloss.NewStyle().
-		Padding(0, 2)
+		Padding(1, 2)
 
 	wordmarkStyle = lipgloss.NewStyle().
 		Foreground(accentPrimary).
