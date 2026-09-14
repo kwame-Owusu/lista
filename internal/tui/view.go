@@ -152,7 +152,7 @@ func (m model) renderTodoLine(i int, todo models.Todo) string {
 		titleStyle = lipgloss.NewStyle().Foreground(fgMuted).Strikethrough(true)
 	}
 	b.WriteString(titleStyle.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
-	b.WriteString(GetPriorityStyle(todo.Priority.String()).Strikethrough(todo.Completed).Render(lipgloss.NewStyle().Width(prioCol).Render(badge)))
+	b.WriteString(getBadgeStyle(todo.Priority.String(), todo.Completed).Strikethrough(todo.Completed).Render(lipgloss.NewStyle().Width(prioCol).Render(badge)))
 	b.WriteString(noteMarkerStyle.Render(lipgloss.NewStyle().Width(2).Render(note)))
 	b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
 	return b.String()
@@ -180,7 +180,7 @@ func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, ch
 	if !todo.Completed {
 		cbStyle = lipgloss.NewStyle().Foreground(fgMain).Bold(true)
 	}
-	badgeStyle := GetPriorityStyle(todo.Priority.String()).Bold(true).Strikethrough(todo.Completed)
+	badgeStyle := getBadgeStyle(todo.Priority.String(), todo.Completed).Bold(true).Strikethrough(todo.Completed)
 	timeStyle := timeAgoStyle
 
 	var b strings.Builder

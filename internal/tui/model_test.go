@@ -10,6 +10,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/kwame-Owusu/lista/internal/config"
 	"github.com/kwame-Owusu/lista/internal/models"
 	"github.com/kwame-Owusu/lista/internal/storage"
 	"github.com/muesli/termenv"
@@ -371,6 +372,32 @@ func TestBadgeStrikethroughOnCompleted(t *testing.T) {
 	}
 	if strings.Contains(plain, "\x1b[9m") {
 		t.Errorf("Expected pending badge to render without strikethrough, got %q", plain)
+	}
+}
+
+func TestCompletedBadgeMuted(t *testing.T) {
+	InitStyles(config.DefaultTheme())
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	defer lipgloss.SetColorProfile(termenv.Ascii)
+
+	muted := getBadgeStyle("High", true).Render("[High]")
+	colored := getBadgeStyle("High", false).Render("[High]")
+
+	// Extract the muted foreground SGR token and require it on completed
+	// badges while pending badges keep their priority color.
+	mutedRef := lipgloss.NewStyle().Foreground(fgMuted).Render("x")
+	const sgr = "\x1b[38;2;"
+	i := strings.Index(mutedRef, sgr)
+	if i < 0 {
+		t.Fatalf("Expected muted SGR in rendered style, got %q", mutedRef)
+	}
+	want := mutedRef[:i+strings.Index(mutedRef[i:], "m")+1]
+
+	if !strings.Contains(muted, want[2:]) {
+		t.Errorf("Expected muted foreground %q on completed badge, got %q", want, muted)
+	}
+	if strings.Contains(colored, want[2:]) {
+		t.Errorf("Expected pending badge to keep priority color, got %q", colored)
 	}
 }
 

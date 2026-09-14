@@ -228,3 +228,13 @@ func GetPriorityStyle(priority string) lipgloss.Style {
 		return lowPriorityStyle
 	}
 }
+
+// getBadgeStyle returns the priority style for a todo's badge, muted when the
+// todo is completed so completed rows read as de-emphasized.
+func getBadgeStyle(priority string, completed bool) lipgloss.Style {
+	s := GetPriorityStyle(priority)
+	if completed {
+		return s.Foreground(fgMuted)
+	}
+	return s
+}
