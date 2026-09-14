@@ -36,7 +36,6 @@ func (m model) View() string {
 	var b strings.Builder
 	todos := m.todoList.Todos
 
-	b.WriteString(m.renderTitle())
 	b.WriteString(m.renderError())
 	b.WriteString(m.renderTodos(todos))
 	b.WriteString(m.renderSummary(todos))
@@ -68,16 +67,6 @@ func truncate(s string, w int) string {
 		return "…"
 	}
 	return string(r[:w-1]) + "…"
-}
-
-func (m model) renderTitle() string {
-	title := wordmarkStyle.Render("✦ LISTA")
-	tagline := taglineStyle.Render("your CLI todo manager")
-
-	b := strings.Builder{}
-	b.WriteString(title + "  " + tagline + "\n")
-	b.WriteString(cursorStyle.Render(strings.Repeat("─", m.innerWidth())) + "\n\n")
-	return b.String()
 }
 
 func (m model) renderError() string {
