@@ -8,6 +8,10 @@ import (
 	"github.com/kwame-Owusu/lista/internal/models"
 )
 
+// contentPadding is the horizontal gutter lipgloss applies on each side of the
+// content column (see contentStyle).
+const contentPadding = 2
+
 func (m model) View() string {
 	if m.confirmDelete {
 		return m.renderDeleteModal()
@@ -22,45 +26,62 @@ func (m model) View() string {
 	}
 
 	if m.addingTodo {
-		return m.renderAddForm()
+		return m.renderForm("Add New Todo")
 	}
 
 	if m.editingTodo {
-		return m.renderEditForm()
+		return m.renderForm("Edit Todo")
 	}
 
 	var b strings.Builder
 	todos := m.todoList.Todos
 
-	b.WriteString(m.renderTitle())
 	b.WriteString(m.renderError())
 	b.WriteString(m.renderTodos(todos))
-	b.WriteString(m.renderCompletedCount(todos))
+	b.WriteString(m.renderSummary(todos))
 	b.WriteString(m.renderHelp())
 
-	return b.String()
+	return contentStyle.Render(b.String())
 }
 
-func (m model) renderTitle() string {
-	title := titleStyle.Render(`
-	╔════════════════╗
-	║     LISTA      ║
-	╚════════════════╝
-	Your CLI todo manager
-`)
-	return title + "\n"
+// innerWidth returns the usable width of the content column, clamped between a
+// narrow floor and the content max width.
+func (m model) innerWidth() int {
+	avail := contentMaxWidth - 2*contentPadding
+	if m.width > 0 && m.width-2*contentPadding < avail {
+		avail = m.width - 2*contentPadding
+	}
+	if avail < 20 {
+		avail = 20
+	}
+	return avail
+}
+
+// truncate shortens a string to w runes, appending an ellipsis when cut.
+func truncate(s string, w int) string {
+	r := []rune(s)
+	if len(r) <= w {
+		return s
+	}
+	if w <= 1 {
+		return "…"
+	}
+	return string(r[:w-1]) + "…"
 }
 
 func (m model) renderError() string {
 	if m.err == nil {
 		return ""
 	}
-	return errorStyle.Render(fmt.Sprintf("⚠ Error: %v", m.err)) + "\n\n"
+	return errorStyle.Render(fmt.Sprintf("⚠ %v", m.err)) + "\n\n"
 }
 
 func (m model) renderTodos(todos []models.Todo) string {
 	if len(todos) == 0 {
-		return itemStyle.Render("No todos yet. Add one to get started!") + "\n"
+		msg := emptyStateStyle.Render("No todos yet. Add one to get started!")
+		hint := helpStyle.Render("press  a  to add · ? for help")
+		return lipgloss.NewStyle().Width(m.innerWidth()).Align(lipgloss.Center).
+			Render(msg+"\n"+hint) + "\n"
 	}
 
 	var b strings.Builder
@@ -70,62 +91,156 @@ func (m model) renderTodos(todos []models.Todo) string {
 	return b.String()
 }
 
-func (m model) renderTodoLine(i int, todo models.Todo) string {
-	// Cursor
-	cursor := "  "
-	if m.cursor == i {
-		cursor = cursorStyle.Render("▶ ")
+// todoRowWidths returns the column widths for a todo row plus the total inner
+// width the row should span.
+func (m model) todoRowWidths() (titleCol, prioCol, timeCol, total int) {
+	prioCol = 9  // "[Medium]" (8) + a gap
+	timeCol = 17 // "added 999d ago" (14) + breathing room
+
+	titleCol = m.innerWidth() - (3 + 2 + prioCol + 2 + timeCol)
+	if titleCol > 40 {
+		titleCol = 40
+	}
+	if titleCol < 8 {
+		titleCol = 8
 	}
 
-	// Checkbox
-	checkbox := "○"
-	if todo.Completed {
-		checkbox = "✓"
-	}
-
-	// Note indicator
-	noteIndicator := ""
-	if len(todo.Notes) > 0 {
-		noteIndicator = "*"
-	}
-
-	content := fmt.Sprintf("%s %s [%s] %s", checkbox, todo.Title, todo.Priority, noteIndicator)
-	priorityBadge := GetPriorityStyle(todo.Priority.String()).Render(fmt.Sprintf("[%s]", todo.Priority))
-	todoTitle := todo.Title
-
-	// Determine style
-	if m.cursor == i {
-		if todo.Completed {
-			return cursor + completedSelectedStyle.Render(content)
-		}
-		timeAgo := todo.TimeAgo()
-		if timeAgo != "" {
-			timeAgo = " " + timeAgoStyle.Render(timeAgo)
-		}
-		return cursor + selectedStyle.Render(content) + timeAgo
-	} else if todo.Completed {
-		return cursor + completedStyle.Render(content)
-	}
-	return fmt.Sprintf("%s %s %s %s", cursor, checkbox, itemStyle.Render(todoTitle), priorityBadge)
+	return titleCol, prioCol, timeCol, m.innerWidth()
 }
 
-func (m model) renderCompletedCount(todos []models.Todo) string {
-	if len(todos) == 0 {
-		return ""
+func (m model) renderTodoLine(i int, todo models.Todo) string {
+	selected := m.cursor == i
+	titleCol, prioCol, timeCol, total := m.todoRowWidths()
+
+	// Cursor marker (2 wide).
+	cursor := "  "
+	if selected {
+		cursor = "\u203a "
 	}
 
-	completedCount := 0
-	for _, todo := range todos {
-		if todo.Completed {
-			completedCount++
+	// Checkbox with status color (2 wide).
+	checkbox := "○"
+	checkboxStyle := checkboxPendingStyle
+	if todo.Completed {
+		checkbox = "✓"
+		checkboxStyle = checkboxDoneStyle
+	}
+
+	// Title (titleCol wide).
+	title := truncate(todo.Title, titleCol)
+
+	// Note marker (2 wide).
+	note := " "
+	if len(todo.Notes) > 0 {
+		note = "•"
+	}
+
+	// Priority badge (prioCol wide) and timestamp (timeCol wide).
+	badge := fmt.Sprintf("[%s]", todo.Priority)
+	timeAgo := todo.TimeAgo()
+
+	if selected {
+		return m.renderSelectedRow(cursor, checkboxStyle, checkbox, title, note, badge, timeAgo, titleCol, prioCol, timeCol, total, todo)
+	}
+
+	var b strings.Builder
+	b.WriteString(cursor)
+	b.WriteString(lipgloss.NewStyle().Width(2).Render(checkboxStyle.Render(checkbox)))
+
+	titleStyle := lipgloss.NewStyle().Foreground(fgMain)
+	if todo.Completed {
+		titleStyle = lipgloss.NewStyle().Foreground(fgMuted).Strikethrough(true)
+	}
+	b.WriteString(titleStyle.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
+	b.WriteString(getBadgeStyle(todo.Priority.String(), todo.Completed).Strikethrough(todo.Completed).Render(lipgloss.NewStyle().Width(prioCol).Render(badge)))
+	b.WriteString(noteMarkerStyle.Render(lipgloss.NewStyle().Width(2).Render(note)))
+	b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
+	return b.String()
+}
+
+// renderSelectedRow draws a todo row with a highlight spanning the title/badge
+// content region, in the pending or completed variant. The timestamp and any
+// trailing space are left on the plain background.
+func (m model) renderSelectedRow(cursor string, checkboxStyle lipgloss.Style, checkbox, title, note, badge, timeAgo string, titleCol, prioCol, timeCol, total int, todo models.Todo) string {
+	var row lipgloss.Style
+	var titleRow lipgloss.Style
+	if todo.Completed {
+		row = lipgloss.NewStyle().
+			Foreground(fgMuted).
+			Background(bgAlt)
+		titleRow = row.Strikethrough(true)
+	} else {
+		row = selectedRowStyle
+		titleRow = row.Bold(true)
+	}
+
+	// Keep status glyphs in their semantic colors so they stay readable on the
+	// subtle dark band while neutral text follows the row ink.
+	cbStyle := checkboxStyle
+	if !todo.Completed {
+		cbStyle = lipgloss.NewStyle().Foreground(fgMain).Bold(true)
+	}
+	badgeStyle := getBadgeStyle(todo.Priority.String(), todo.Completed).Bold(true).Strikethrough(todo.Completed)
+	timeStyle := timeAgoStyle
+
+	var b strings.Builder
+	b.WriteString(row.Render(cursorStyle.Render(cursor)))
+	b.WriteString(row.Render(lipgloss.NewStyle().Width(2).Render(cbStyle.Render(checkbox))))
+	b.WriteString(titleRow.Render(lipgloss.NewStyle().Width(titleCol).Render(title)))
+	b.WriteString(row.Render(lipgloss.NewStyle().Width(prioCol).Render(badgeStyle.Render(badge))))
+	b.WriteString(lipgloss.NewStyle().Width(2).Render(note))
+	if timeAgo != "" {
+		b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(timeStyle.Render(timeAgo)))
+	} else {
+		b.WriteString(lipgloss.NewStyle().Width(timeCol).Render(""))
+	}
+
+	used := lipgloss.Width(b.String())
+	if used < total {
+		b.WriteString(strings.Repeat(" ", total-used))
+	}
+	return b.String()
+}
+
+func (m model) renderSummary(todos []models.Todo) string {
+	if len(todos) == 0 {
+		return "\n"
+	}
+
+	completed := 0
+	for _, t := range todos {
+		if t.Completed {
+			completed++
 		}
 	}
-	countString := fmt.Sprintf("%v of %v complete", completedCount, len(todos))
-	return helpStyle.Render(countString)
+
+	barCol := 28
+	if m.innerWidth()-24 < barCol {
+		barCol = m.innerWidth() - 24
+	}
+	if barCol < 3 {
+		barCol = 3
+	}
+
+	fill := int(float64(barCol)*float64(completed)/float64(len(todos)) + 0.5)
+	if fill > barCol {
+		fill = barCol
+	}
+
+	done := progressStyle.Render(strings.Repeat("█", fill))
+	todo := progressEmptyStyle.Render(strings.Repeat("░", barCol-fill))
+	bar := lipgloss.NewStyle().Padding(0, 1).Render(done + todo)
+
+	count := fmt.Sprintf("%d of %d complete", completed, len(todos))
+
+	line := lipgloss.JoinHorizontal(lipgloss.Top, bar, count)
+	return "\n" + summaryStyle.Render(line) + "\n\n"
 }
 
 func (m model) renderHelp() string {
-	return helpStyle.Render("\n↑/↓: navigate • space: toggle • a: add • u: undo • ?: help • q: quit")
+	return helpStyle.Render(
+		"↑/k ↓/j navigate   ·   ? help   ·   q quit",
+	) + "\n"
 }
 
 func (m model) renderDeleteModal() string {
@@ -135,50 +250,48 @@ func (m model) renderDeleteModal() string {
 		title = todos[idx].Title
 	}
 
-	modal := lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		modalStyle.Render(
-			fmt.Sprintf(
-				"Delete \"%s\"?\n\n%s",
-				title,
-				cursorStyle.Render("y: confirm • n / esc: cancel"),
-			),
-		),
+	body := fmt.Sprintf(
+		"Delete %q?\n\n%s",
+		title,
+		cursorStyle.Render("y: confirm • n / esc: cancel"),
 	)
-
-	return lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		modal,
-	)
+	return m.renderModal("", body)
 }
 
 func (m model) renderPurgeModal() string {
-	modal := lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		modalStyle.Render(
-			fmt.Sprintf(
-				"Purge all completed todos?\n\n%s",
-				cursorStyle.Render("y: confirm • n / esc: cancel"),
-			),
-		),
+	body := fmt.Sprintf(
+		"Purge all completed todos?\n\n%s",
+		cursorStyle.Render("y: confirm • n / esc: cancel"),
 	)
+	return m.renderModal("", body)
+}
 
+func (m model) renderModal(headerTitle, body string) string {
+	if headerTitle == "" {
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			modalStyle.Render(body),
+		)
+	}
+
+	width := lipgloss.Width(body)
+	header := m.renderModalHeader(headerTitle, width)
+
+	full := header + "\n" + body
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		modal,
+		modalStyle.Render(full),
 	)
+}
+
+func (m model) renderModalHeader(headerTitle string, width int) string {
+	return modalHeaderStyle.Width(width).Render(headerTitle)
 }
 
 func (m model) helpRow(rawKeys, action string, keyWidth int) string {
@@ -214,7 +327,7 @@ func (m model) renderHelpOverlay() string {
 		lines = append(lines, m.helpRow(k, actions[i], kw))
 	}
 
-	content := titleStyle.Render("KEYBINDINGS") + "\n\n" +
+	content := cursorStyle.Render("KEYBINDINGS") + "\n\n" +
 		strings.Join(lines, "\n") + "\n\n" +
 		helpStyle.Render("esc / ? to close")
 
@@ -230,15 +343,13 @@ func (m model) renderHelpOverlay() string {
 func (m model) renderPrioritySelector() string {
 	var b strings.Builder
 
-	priorityLabel := "Priority:"
+	priorityLabel := fieldLabelStyle.Render("Priority:")
 	if m.focusedField == fieldPriority {
-		priorityLabel = cursorStyle.Render("→ Priority:")
-	} else {
-		priorityLabel = itemStyle.Render("  Priority:")
+		priorityLabel = cursorStyle.Render("▸ Priority:")
 	}
 	b.WriteString(priorityLabel + "\n")
 
-	for i, p := range priorityOptions {
+	for _, p := range priorityOptions {
 		var style lipgloss.Style
 		if p == m.priority {
 			if m.focusedField == fieldPriority {
@@ -250,105 +361,44 @@ func (m model) renderPrioritySelector() string {
 			style = itemStyle.Foreground(fgMuted)
 		}
 		b.WriteString("  " + style.Render(p.String()))
-		if i < len(priorityOptions)-1 {
-			b.WriteString("  ")
-		}
+		b.WriteString("  ")
 	}
 	b.WriteString("\n\n")
 
 	return b.String()
 }
 
-func (m model) renderAddForm() string {
+func (m model) renderForm(formTitle string) string {
 	var b strings.Builder
 
-	// Title
-	formTitle := titleStyle.Render("✨ Add New Todo") + "\n\n"
-	b.WriteString(formTitle)
-
 	// Title field
-	titleLabel := "Title:"
-	if m.focusedField == fieldTitle {
-		titleLabel = cursorStyle.Render("→ Title:")
-	} else {
-		titleLabel = itemStyle.Render("  Title:")
-	}
-	b.WriteString(titleLabel + "\n")
-	b.WriteString(m.titleInput.View() + "\n\n")
+	b.WriteString(m.renderFieldLabel("Title", m.focusedField == fieldTitle))
+	b.WriteString(m.renderInput(m.titleInput.View(), m.focusedField == fieldTitle) + "\n\n")
 
 	// Priority field
 	b.WriteString(m.renderPrioritySelector())
 
 	// Notes field
-	notesLabel := "Notes (optional):"
-	if m.focusedField == fieldNotes {
-		notesLabel = cursorStyle.Render("→ Notes (optional):")
-	} else {
-		notesLabel = itemStyle.Render("  Notes (optional):")
-	}
-	b.WriteString(notesLabel + "\n")
-	b.WriteString(m.notesInput.View() + "\n\n")
+	b.WriteString(m.renderFieldLabel("Notes (optional)", m.focusedField == fieldNotes))
+	b.WriteString(m.renderInput(m.notesInput.View(), m.focusedField == fieldNotes) + "\n\n")
 
 	// Help text
 	helpText := "tab: next field • ←/→/h/l: change priority • enter/ctrl+s: save • esc: cancel"
 	b.WriteString(helpStyle.Render(helpText))
 
-	// Center the form
-	content := b.String()
-	formBox := modalStyle.Render(content)
-
-	return lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		formBox,
-	)
+	return m.renderModal("✦ "+formTitle, b.String())
 }
 
-func (m model) renderEditForm() string {
-	var b strings.Builder
-
-	// Title
-	formTitle := titleStyle.Render("✨ Edit Todo") + "\n\n"
-	b.WriteString(formTitle)
-
-	// Title field
-	titleLabel := "Title:"
-	if m.focusedField == fieldTitle {
-		titleLabel = cursorStyle.Render("→ Title:")
-	} else {
-		titleLabel = itemStyle.Render("  Title:")
+func (m model) renderFieldLabel(label string, focused bool) string {
+	if focused {
+		return cursorStyle.Render("▸ "+label) + "\n"
 	}
-	b.WriteString(titleLabel + "\n")
-	b.WriteString(m.titleInput.View() + "\n\n")
+	return fieldLabelStyle.Render("  "+label) + "\n"
+}
 
-	// Priority field
-	b.WriteString(m.renderPrioritySelector())
-
-	// Notes field
-	notesLabel := "Notes (optional):"
-	if m.focusedField == fieldNotes {
-		notesLabel = cursorStyle.Render("→ Notes (optional):")
-	} else {
-		notesLabel = itemStyle.Render("  Notes (optional):")
+func (m model) renderInput(view string, focused bool) string {
+	if focused {
+		return fieldFocusStyle.Render(view)
 	}
-	b.WriteString(notesLabel + "\n")
-	b.WriteString(m.notesInput.View() + "\n\n")
-
-	// Help text
-	helpText := "tab: next field • ←/→/h/l: change priority • enter/ctrl+s: save • esc: cancel"
-	b.WriteString(helpStyle.Render(helpText))
-
-	// Center the form
-	content := b.String()
-	formBox := modalStyle.Render(content)
-
-	return lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		formBox,
-	)
+	return view
 }

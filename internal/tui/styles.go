@@ -41,7 +41,27 @@ var (
 	cursorStyle            lipgloss.Style
 	errorStyle             lipgloss.Style
 	timeAgoStyle           lipgloss.Style
+
+	// TUI layout styles
+	contentStyle         lipgloss.Style
+	wordmarkStyle        lipgloss.Style
+	taglineStyle         lipgloss.Style
+	summaryStyle         lipgloss.Style
+	emptyStateStyle      lipgloss.Style
+	progressStyle        lipgloss.Style
+	progressEmptyStyle   lipgloss.Style
+	modalHeaderStyle     lipgloss.Style
+	fieldFocusStyle      lipgloss.Style
+	fieldLabelStyle      lipgloss.Style
+	checkboxDoneStyle    lipgloss.Style
+	checkboxPendingStyle lipgloss.Style
+	noteMarkerStyle      lipgloss.Style
+	selectedRowStyle     lipgloss.Style
 )
+
+// contentMaxWidth is the widest the TUI content column may grow to so the app
+// reads as a deliberate frame even on very wide terminals.
+const contentMaxWidth = 80
 
 func InitStyles(theme config.Theme) {
 	//  Color mapping
@@ -125,6 +145,59 @@ func InitStyles(theme config.Theme) {
 		Foreground(fgMuted).
 		Italic(true)
 
+	// TUI layout styles
+	contentStyle = lipgloss.NewStyle().
+		Padding(1, 2)
+
+	wordmarkStyle = lipgloss.NewStyle().
+		Foreground(accentPrimary).
+		Bold(true)
+
+	taglineStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Italic(true)
+
+	summaryStyle = lipgloss.NewStyle().
+		Foreground(fgMuted)
+
+	emptyStateStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	progressStyle = lipgloss.NewStyle().
+		Foreground(successCol)
+
+	progressEmptyStyle = lipgloss.NewStyle().
+		Foreground(bgAlt)
+
+	modalHeaderStyle = lipgloss.NewStyle().
+		Foreground(bgMain).
+		Background(accentPrimary).
+		Bold(true)
+
+	fieldFocusStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(accentPrimary)
+
+	fieldLabelStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	checkboxDoneStyle = lipgloss.NewStyle().
+		Foreground(successCol).
+		Bold(true)
+
+	checkboxPendingStyle = lipgloss.NewStyle().
+		Foreground(fgMuted)
+
+	noteMarkerStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	selectedRowStyle = lipgloss.NewStyle().
+		Foreground(fgMain).
+		Background(bgAlt)
+
 	//  CLI styles
 	headerStyle = lipgloss.NewStyle().
 		Foreground(fgMain).
@@ -154,4 +227,14 @@ func GetPriorityStyle(priority string) lipgloss.Style {
 	default:
 		return lowPriorityStyle
 	}
+}
+
+// getBadgeStyle returns the priority style for a todo's badge, muted when the
+// todo is completed so completed rows read as de-emphasized.
+func getBadgeStyle(priority string, completed bool) lipgloss.Style {
+	s := GetPriorityStyle(priority)
+	if completed {
+		return s.Foreground(fgMuted)
+	}
+	return s
 }

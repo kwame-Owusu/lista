@@ -9,8 +9,11 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/kwame-Owusu/lista/internal/config"
 	"github.com/kwame-Owusu/lista/internal/models"
 	"github.com/kwame-Owusu/lista/internal/storage"
+	"github.com/muesli/termenv"
 )
 
 func TestNewModel(t *testing.T) {
@@ -322,6 +325,79 @@ func TestTickRefresh(t *testing.T) {
 	}
 	if _, ok := updatedForm.(model); !ok {
 		t.Errorf("Expected model back after tick, got %T", updatedForm)
+	}
+}
+
+func TestTimestampOnlyOnSelectedRow(t *testing.T) {
+	tl := models.NewTodoList()
+	for _, task := range []string{"First task", "Second task"} {
+		if err := tl.Add(task, models.Low, ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tl.Todos[0].CreatedAt = time.Now().Add(-2 * time.Second)
+	tl.Todos[1].CreatedAt = time.Now().Add(-10 * time.Second)
+
+	m := NewModel(tl, "test.json")
+
+	// Cursor starts on the first row, so only its timestamp is visible.
+	if view := m.View(); !strings.Contains(view, "added 2s ago") {
+		t.Errorf("Expected selected row timestamp 'added 2s ago' in view:\n%s", view)
+	} else if strings.Contains(view, "added 10s ago") {
+		t.Errorf("Expected non-selected row timestamp to be hidden, got:\n%s", view)
+	}
+
+	// Move to the second row: its timestamp appears, the first row's is hidden.
+	upd, _ := m.Update(keyMsg("j"))
+	moveModel, ok := upd.(model)
+	if !ok {
+		t.Fatalf("Expected model after Update, got %T", upd)
+	}
+	if view := moveModel.View(); !strings.Contains(view, "added 10s ago") {
+		t.Errorf("Expected selected row timestamp 'added 10s ago' in view:\n%s", view)
+	} else if strings.Contains(view, "added 2s ago") {
+		t.Errorf("Expected non-selected row timestamp to be hidden, got:\n%s", view)
+	}
+}
+
+func TestBadgeStrikethroughOnCompleted(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.ANSI)
+	defer lipgloss.SetColorProfile(termenv.Ascii)
+
+	struck := GetPriorityStyle("High").Strikethrough(true).Render("[High]")
+	plain := GetPriorityStyle("High").Strikethrough(false).Render("[High]")
+
+	if !strings.Contains(struck, "\x1b[9m") {
+		t.Errorf("Expected completed badge to render with strikethrough, got %q", struck)
+	}
+	if strings.Contains(plain, "\x1b[9m") {
+		t.Errorf("Expected pending badge to render without strikethrough, got %q", plain)
+	}
+}
+
+func TestCompletedBadgeMuted(t *testing.T) {
+	InitStyles(config.DefaultTheme())
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	defer lipgloss.SetColorProfile(termenv.Ascii)
+
+	muted := getBadgeStyle("High", true).Render("[High]")
+	colored := getBadgeStyle("High", false).Render("[High]")
+
+	// Extract the muted foreground SGR token and require it on completed
+	// badges while pending badges keep their priority color.
+	mutedRef := lipgloss.NewStyle().Foreground(fgMuted).Render("x")
+	const sgr = "\x1b[38;2;"
+	i := strings.Index(mutedRef, sgr)
+	if i < 0 {
+		t.Fatalf("Expected muted SGR in rendered style, got %q", mutedRef)
+	}
+	want := mutedRef[:i+strings.Index(mutedRef[i:], "m")+1]
+
+	if !strings.Contains(muted, want[2:]) {
+		t.Errorf("Expected muted foreground %q on completed badge, got %q", want, muted)
+	}
+	if strings.Contains(colored, want[2:]) {
+		t.Errorf("Expected pending badge to keep priority color, got %q", colored)
 	}
 }
 
