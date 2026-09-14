@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/kwame-Owusu/lista/internal/models"
@@ -15,8 +17,19 @@ var addCmd = &cobra.Command{
 	Use:   "add [title]",
 	Short: "Add a new todo",
 	Long:  "Add a new todo with description and optional priority (high, medium, low) and notes",
-	Args:  cobra.MinimumNArgs(1),
+	Args:  validateAddArgs,
 	RunE:  addTodo,
+}
+
+func validateAddArgs(_ *cobra.Command, args []string) error {
+	if len(args) > 0 {
+		return nil
+	}
+	stat, err := os.Stdin.Stat()
+	if err == nil && stat.Mode()&os.ModeCharDevice == 0 {
+		return nil
+	}
+	return fmt.Errorf("requires a title argument or piped input, e.g. echo \"Buy milk\" | lista add")
 }
 
 func init() {
@@ -26,6 +39,13 @@ func init() {
 
 func addTodo(cmd *cobra.Command, args []string) error {
 	title := strings.Join(args, " ")
+	if title == "" {
+		input, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return fmt.Errorf("reading stdin: %w", err)
+		}
+		title = strings.TrimSpace(string(input))
+	}
 	// Parse the priority flag
 	priority, err := models.ParsePriority(priorityFlag)
 	if err != nil {
