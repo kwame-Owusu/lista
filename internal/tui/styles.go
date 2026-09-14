@@ -41,7 +41,27 @@ var (
 	cursorStyle            lipgloss.Style
 	errorStyle             lipgloss.Style
 	timeAgoStyle           lipgloss.Style
+
+	// TUI layout styles
+	contentStyle         lipgloss.Style
+	wordmarkStyle        lipgloss.Style
+	taglineStyle         lipgloss.Style
+	summaryStyle         lipgloss.Style
+	emptyStateStyle      lipgloss.Style
+	progressStyle        lipgloss.Style
+	progressEmptyStyle   lipgloss.Style
+	modalHeaderStyle     lipgloss.Style
+	fieldFocusStyle      lipgloss.Style
+	fieldLabelStyle      lipgloss.Style
+	checkboxDoneStyle    lipgloss.Style
+	checkboxPendingStyle lipgloss.Style
+	noteMarkerStyle      lipgloss.Style
+	selectedRowStyle     lipgloss.Style
 )
+
+// contentMaxWidth is the widest the TUI content column may grow to so the app
+// reads as a deliberate frame even on very wide terminals.
+const contentMaxWidth = 80
 
 func InitStyles(theme config.Theme) {
 	//  Color mapping
@@ -124,6 +144,60 @@ func InitStyles(theme config.Theme) {
 	timeAgoStyle = lipgloss.NewStyle().
 		Foreground(fgMuted).
 		Italic(true)
+
+	// TUI layout styles
+	contentStyle = lipgloss.NewStyle().
+		Padding(0, 2)
+
+	wordmarkStyle = lipgloss.NewStyle().
+		Foreground(accentPrimary).
+		Bold(true)
+
+	taglineStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Italic(true)
+
+	summaryStyle = lipgloss.NewStyle().
+		Foreground(fgMuted)
+
+	emptyStateStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	progressStyle = lipgloss.NewStyle().
+		Foreground(successCol)
+
+	progressEmptyStyle = lipgloss.NewStyle().
+		Foreground(bgAlt)
+
+	modalHeaderStyle = lipgloss.NewStyle().
+		Foreground(bgMain).
+		Background(accentSecondary).
+		Bold(true)
+
+	fieldFocusStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(accentPrimary)
+
+	fieldLabelStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	checkboxDoneStyle = lipgloss.NewStyle().
+		Foreground(successCol).
+		Bold(true)
+
+	checkboxPendingStyle = lipgloss.NewStyle().
+		Foreground(fgMuted)
+
+	noteMarkerStyle = lipgloss.NewStyle().
+		Foreground(fgMuted).
+		Bold(true)
+
+	selectedRowStyle = lipgloss.NewStyle().
+		Foreground(bgMain).
+		Background(accentSecondary).
+		Bold(true)
 
 	//  CLI styles
 	headerStyle = lipgloss.NewStyle().
