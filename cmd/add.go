@@ -57,5 +57,9 @@ func addTodo(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("adding todo: %w", err)
 	}
 
-	return saveTodos()
+	if err := saveTodos(); err != nil {
+		return err
+	}
+	fmt.Printf("Added todo with ID: %d\n", todoList.NextID-1)
+	return nil
 }
