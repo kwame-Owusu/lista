@@ -1,6 +1,6 @@
-# Lista
+<h1 align="center">Lista</h1>
 
-A minimal, good-looking todo list for your terminal — CLI and TUI, pick your mode.
+<p align="center">A minimal, good-looking todo list for your terminal — CLI and TUI, pick your mode.</p>
 
 <p align="center">
   <a href="https://github.com/kwame-Owusu/lista/blob/main/LICENSE"><img src="https://img.shields.io/github/license/kwame-Owusu/lista?style=flat" alt="License"></a>
