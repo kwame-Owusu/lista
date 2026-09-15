@@ -27,12 +27,12 @@ And it was a fun way to practice Go and build something with [Bubble Tea](https:
 
 ## Features
 
-- **Two modes in one** — CLI for quick ops, TUI for interactive management
-- **Priorities** — Low, Medium, High with color-coded badges
-- **Notes** — Attach longer notes to any todo
-- **Timestamps** — See when each todo was added ("added 5s ago", "added 10mins ago", etc.)
-- **Themeable** — Ships with Gruvbox, customize any color in the config
-- **Portable JSON** — Your data is just a file, sync it however you like
+- **Two modes in one** — use the CLI for quick ops or the TUI for interactive management
+- **Priorities & notes** — Low / Medium / High badges and longer notes on any todo
+- **Smart lists** — filter by status, priority, or search; toggle and uncomplete with one command
+- **Piped input** — `echo "Buy milk" | lista add`
+- **Built for speed in the TUI** — add/edit forms, undo (`u`), purge (`c`), and a `?` help overlay
+- **Themeable & portable** — Gruvbox by default, any color via config; plain JSON data with auto-backup of corrupt files
 
 ## Installation
 
@@ -60,7 +60,19 @@ go build -o lista
 lista
 ```
 
-Navigate with `↑/↓`, toggle with `space`, add with `a`, delete with `d`, edit with `e`, quit with `q`.
+| Keys                 | Action                    |
+| -------------------- | ------------------------- |
+| `↑` / `k`, `↓` / `j` | Move up / down            |
+| `space`              | Toggle complete           |
+| `a`                  | Add a todo                |
+| `e`                  | Edit the selected todo    |
+| `d` / `x`            | Delete (confirm with `y`) |
+| `c`                  | Purge completed todos     |
+| `u`                  | Undo last action          |
+| `?`                  | Show help overlay         |
+| `q` / `ctrl+c`       | Quit                      |
+
+Press `?` inside the TUI for the full keybinding reference, including the add/edit forms (`tab` to switch fields, `←/→/h/l` to change priority, `enter`/`ctrl+s` to save, `esc` to cancel).
 
 ### CLI mode
 
@@ -68,29 +80,43 @@ Navigate with `↑/↓`, toggle with `space`, add with `a`, delete with `d`, edi
 # Add a todo with priority and notes
 lista add "Add new middleware" --priority high --notes "simple middleware to track visits"
 
+# Add a todo from piped input
+echo "Buy milk" | lista add
+
 # Add a simple todo
 lista add "Update docs"
 
 # List todos
 lista list
 
+# Filter by status, priority, or search
+lista list --pending
+lista list --done --priority high
+lista list --search docs
+
 # Complete a todo
 lista complete 1
+
+# Toggle or revert completion
+lista toggle 1
+lista uncomplete 1
 
 # View a todo with notes
 lista view 1
 ```
 
-| Command    | Description            |
-|------------|-----------------------|
-| `add`      | Add a new todo        |
-| `list`     | List all todos        |
-| `complete` | Mark a todo done      |
-| `delete`   | Remove a todo         |
-| `edit`     | Change the title      |
-| `view`     | Show full details     |
-| `notes`    | Add notes to a todo   |
-| `export`   | Export todos as JSON  |
+| Command      | Description                                                            |
+| ------------ | ---------------------------------------------------------------------- |
+| `add`        | Add a new todo (accepts piped input)                                   |
+| `list`       | List todos (+ `--pending`, `--done`, `--priority`, `--search` filters) |
+| `complete`   | Mark a todo done                                                       |
+| `uncomplete` | Mark a todo pending                                                    |
+| `toggle`     | Flip a todo's completion status                                        |
+| `delete`     | Remove a todo                                                          |
+| `edit`       | Change the title                                                       |
+| `view`       | Show full details                                                      |
+| `notes`      | Add notes to a todo                                                    |
+| `export`     | Export todos as Markdown                                               |
 
 ## Tmux integration
 
@@ -102,7 +128,6 @@ bind-key l display-popup -w 80% -h 80% -E "lista"
 
 With `CTRL+a` as your prefix, hitting `CTRL+a` then `l` opens Lista in a centered floating pane.
 
-
 https://github.com/user-attachments/assets/705a15b5-110a-4e48-8944-27e65270bf2f
 
 ## Configuration
@@ -112,9 +137,15 @@ Lista ships with Gruvbox (because I like Gruvbox and you should too 🫡). To cu
 ```json
 {
   "theme": {
-    "background": "#282828",
-    "foreground": "#ebdbb2",
-    "accent": "#d79921",
+    "background": "#3c3836",
+    "background_alt": "#282828",
+    "text_primary": "#ebdbb2",
+    "text_secondary": "#c5c7bc",
+    "text_muted": "#a89984",
+    "priority_high": "#fb4934",
+    "priority_medium": "#fe8019",
+    "priority_low": "#b8bb26",
+    "accent": "#fabd2f",
     ...
   }
 }
